@@ -57,6 +57,33 @@ function App() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const contentText = useMemo(() => storyContent.finalLetter.join('\n\n'), []);
   const [revealedText, setRevealedText] = useState('');
+  const closeLetterRef = useRef<HTMLButtonElement>(null);
+  const letterDialogRef = useRef<HTMLElement>(null);
+  const letterTriggerRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!openLetter) return;
+    closeLetterRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpenLetter(null);
+        letterTriggerRef.current?.focus();
+      } else if (event.key === 'Tab' && letterDialogRef.current) {
+        const focusable = Array.from(letterDialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], textarea, input, [tabindex]:not([tabindex="-1"])'));
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [openLetter]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
@@ -125,6 +152,8 @@ function App() {
   const progress = ((chapter + 1) / storyContent.chapters.length) * 100;
   const currentQuestion = storyContent.questions[questionIndex];
   const duration = getDuration(new Date(storyContent.relationshipStart), now);
+  const answeredCount = storyContent.questions.filter((question) => Boolean(answers[question.id]?.trim())).length;
+  const heartColors = ['#d8759d', '#d6a44f', '#a78ac5'];
 
   if (!started) {
     return <main className="welcome">
@@ -185,16 +214,26 @@ function App() {
           <p>Hay palabras para los días luminosos y también para los que necesitan un poquito más de ternura. Elige la que hoy te haga bien.</p>
         </header>
         <div className="cards-grid">
-          {storyContent.dayLetters.map((letter) => <button className="letter-card" key={letter.id} type="button" data-testid={`button-open-letter-${letter.id}`} aria-expanded={openLetter === letter.id} onClick={() => setOpenLetter(openLetter === letter.id ? null : letter.id)}>
-            <MailOpen className="letter-icon" strokeWidth={1.25} />
+          {storyContent.dayLetters.map((letter) => <button className={`letter-card ${openLetter === letter.id ? 'letter-card-selected' : ''}`} key={letter.id} type="button" data-testid={`button-open-letter-${letter.id}`} aria-expanded={openLetter === letter.id} aria-haspopup="dialog" onClick={(event) => {
+            if (openLetter === letter.id) { setOpenLetter(null); return; }
+            letterTriggerRef.current = event.currentTarget;
+            setOpenLetter(letter.id);
+          }}>
+            <span className="card-envelope" aria-hidden="true"><span className="card-envelope-paper" /><span className="card-envelope-flap" /><Heart className="card-envelope-seal" size={17} fill="currentColor" /></span>
             <strong>{letter.title}</strong>
-            <small>{openLetter === letter.id ? 'Pulsa para cerrar' : letter.hint}</small>
+            <small>{openLetter === letter.id ? 'Carta abierta' : letter.hint}</small>
           </button>)}
         </div>
-        {openLetter && <article className="letter-open" data-testid={`text-letter-message-${openLetter}`} aria-live="polite">
-          <button className="letter-close" type="button" data-testid="button-close-day-letter" aria-label="Cerrar carta" onClick={() => setOpenLetter(null)}><X size={19} /></button>
-          <p>{storyContent.dayLetters.find((letter) => letter.id === openLetter)?.message}</p>
-        </article>}
+        {openLetter && <div className="letter-overlay" data-testid="overlay-day-letter">
+          <button className="letter-scrim" type="button" aria-label="Cerrar la carta" onClick={() => { setOpenLetter(null); letterTriggerRef.current?.focus(); }} />
+          <article ref={letterDialogRef} className="letter-open" role="dialog" aria-modal="true" aria-labelledby="opened-letter-title" data-testid={`text-letter-message-${openLetter}`} aria-live="polite">
+            <button ref={closeLetterRef} className="letter-close" type="button" data-testid="button-close-day-letter" aria-label="Cerrar carta y volver a los sobres" onClick={() => { setOpenLetter(null); letterTriggerRef.current?.focus(); }}><X size={19} /></button>
+            <span className="letter-dialog-kicker"><MailOpen size={16} /> Una carta para ti</span>
+            <h3 id="opened-letter-title">{storyContent.dayLetters.find((letter) => letter.id === openLetter)?.title}</h3>
+            <p>{storyContent.dayLetters.find((letter) => letter.id === openLetter)?.message}</p>
+            <button className="button-soft" type="button" data-testid="button-return-to-envelopes" onClick={() => { setOpenLetter(null); letterTriggerRef.current?.focus(); }}><ArrowLeft size={16} /> Volver a los sobres</button>
+          </article>
+        </div>}
       </div>
     </section>}
 
@@ -205,6 +244,16 @@ function App() {
           <h2 className="sub-title" id="chapter-title-1">{storyContent.chapters[1].label}</h2>
           <p>Unas preguntas para recordar, imaginar y conocernos un poquito más. Puedes responder solo lo que quieras.</p>
         </header>
+        <aside className="heart-score" aria-label="Marcador de respuestas" data-testid="status-answer-score">
+          <div className="heart-score-heading"><strong>{answeredCount} de {storyContent.questions.length}</strong><span>{answeredCount === 1 ? 'respuesta compartida' : 'respuestas compartidas'}</span></div>
+          <div className="score-hearts" role="img" aria-label={`${answeredCount} de ${storyContent.questions.length} preguntas respondidas`}>
+            {storyContent.questions.map((question, index) => <Heart key={question.id} size={22} fill={answers[question.id]?.trim() ? heartColors[index % heartColors.length] : 'transparent'} color={answers[question.id]?.trim() ? heartColors[index % heartColors.length] : '#d9cbd6'} strokeWidth={1.8} data-testid={`status-answer-heart-${question.id}`} />)}
+          </div>
+          <div className="heart-legend" aria-label="Colores de los corazones">
+            <span><i className="legend-dot tenderness" />Ternura</span><span><i className="legend-dot joy" />Alegría</span><span><i className="legend-dot closeness" />Cercanía y complicidad</span>
+          </div>
+          <small>Un corazón por cada pregunta respondida; no hay respuestas incorrectas.</small>
+        </aside>
         {!questionComplete ? <article className="story-panel" data-testid="panel-story-question">
           <div className="question-count" data-testid="text-question-progress">Pregunta {questionIndex + 1} de {storyContent.questions.length}</div>
           <h3 className="question-text">{currentQuestion.prompt}</h3>
@@ -244,7 +293,24 @@ function App() {
             <path d="M18 81 56 26 91 67 130 20" fill="none" stroke="#ecd5b7" strokeWidth="1" strokeDasharray="2 5" />
             <circle cx="18" cy="81" r="3" fill="#f5e1c2" /><circle cx="56" cy="26" r="3" fill="#f5e1c2" /><circle cx="91" cy="67" r="3" fill="#f5e1c2" /><circle cx="130" cy="20" r="3" fill="#f5e1c2" />
           </svg>
-          <p className="sky-message">Dos lugares. Un mismo cielo. Y un cariño que sabe cruzar la distancia.</p>
+          <p className="sky-message">{storyContent.skyMessage}</p>
+        </div>
+        <div className="relationship-timeline" data-testid="illustration-relationship-timeline">
+          <div className="timeline-heading"><span className="eyebrow">Dos fechas que guardamos</span><h3>De encontrarnos a elegirnos</h3></div>
+          <svg className="timeline-art" viewBox="0 0 760 190" role="img" aria-label="Dos figuras ilustradas se acercan y encuentran; una línea de corazones las conecta con el comienzo de una relación">
+            <path className="timeline-trail" d="M105 132 C205 25 265 165 380 94 S570 28 655 112" />
+            <path className="timeline-dash" d="M105 132 C205 25 265 165 380 94 S570 28 655 112" />
+            <g className="timeline-person person-left"><circle cx="111" cy="81" r="17" /><path d="M85 142c2-27 12-40 26-40s25 13 27 40" /></g>
+            <g className="timeline-person person-right"><circle cx="649" cy="77" r="17" /><path d="M623 139c2-27 12-40 26-40s25 13 27 40" /></g>
+            <g className="timeline-meet-heart"><path d="M380 104c-20-12-34-28-34-43a19 19 0 0 1 34-12 19 19 0 0 1 34 12c0 15-14 31-34 43Z" /></g>
+            <circle className="timeline-spark spark-one" cx="245" cy="54" r="5" /><circle className="timeline-spark spark-two" cx="520" cy="54" r="4" />
+            <path className="timeline-ground" d="M62 151h636" />
+          </svg>
+          <div className="timeline-events">
+            {storyContent.relationshipTimeline.map((event, index) => <div className={`timeline-event event-${index}`} key={event.date} data-testid={`timeline-event-${index + 1}`}>
+              <span className="timeline-event-date">{event.date}</span><strong>{event.title}</strong><p>{event.note}</p>
+            </div>)}
+          </div>
         </div>
         <div className="counter-wrap" data-testid="content-time-together">
           <div className="eyebrow">Desde el 14 de septiembre de 2026</div>
@@ -266,11 +332,28 @@ function App() {
           <p>No quiero estar a tu lado solo cuando todo sale bien. Quiero elegirnos también cuando el camino pida paciencia.</p>
         </header>
         <article className="promise-card" data-testid="content-future-promise">
-          <Sun className="promise-orbit" strokeWidth={1.15} />
+          <div className="promise-sky-art" aria-hidden="true">
+            <span className="promise-sun-orbit"><Sun className="promise-orbit" strokeWidth={1.15} /></span>
+            <svg viewBox="0 0 520 190" className="promise-illustration">
+              <path className="promise-horizon" d="M30 151c80-26 121 18 204-2s142-15 256-1" />
+              <path className="promise-path" d="M65 155c75-74 145 20 212-37s125-20 180 29" />
+              <g className="promise-figure figure-one"><circle cx="168" cy="84" r="15" /><path d="M146 143c2-29 9-42 22-42s20 13 22 42" /></g>
+              <g className="promise-figure figure-two"><circle cx="355" cy="76" r="15" /><path d="M333 137c2-29 9-42 22-42s20 13 22 42" /></g>
+              <path className="promise-house" d="m400 104 23-20 23 20v34h-46zM414 138v-20h18v20" />
+              <path className="promise-heart" d="M260 69c-11-8-18-15-18-23a11 11 0 0 1 18-7 11 11 0 0 1 18 7c0 8-7 15-18 23Z" />
+              <circle className="promise-firefly firefly-a" cx="100" cy="65" r="3" /><circle className="promise-firefly firefly-b" cx="447" cy="46" r="3" />
+            </svg>
+          </div>
           <p>{storyContent.futureMessage}</p>
           <p className="promise-emphasis">{storyContent.futurePromise}</p>
           <p>Sin prisa por tener todas las respuestas. Con ganas de construir, conversar y seguir soñando juntos.</p>
-          <Heart size={19} color="#c28da9" strokeWidth={1.4} aria-hidden="true" />
+          <div className="promise-commitments" data-testid="list-future-commitments">
+            {storyContent.futureCommitments.map((item, index) => <div className="commitment-item" key={item.title} data-testid={`future-commitment-${index + 1}`}>
+              <span className="commitment-heart" aria-hidden="true"><Heart size={17} fill="currentColor" /></span>
+              <span><strong>{item.title}</strong><small>{item.detail}</small></span>
+            </div>)}
+          </div>
+          <Heart className="promise-signoff-heart" size={19} color="#c28da9" strokeWidth={1.4} aria-hidden="true" />
         </article>
       </div>
     </section>}

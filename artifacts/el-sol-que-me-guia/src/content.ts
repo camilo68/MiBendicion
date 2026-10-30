@@ -48,8 +48,17 @@ export const storyContent = {
     { id: 'future', prompt: '¿Qué cosa sencilla te gustaría que hiciéramos juntos algún día?', placeholder: 'Soñar también puede ser algo pequeño…', response: 'Me guardo este deseo con cariño.' },
   ],
   skyMessage: 'Aunque nos separen kilómetros, levantamos la mirada hacia el mismo cielo. Y en ese cielo compartido, siempre encuentro una forma de sentirte cerca.',
+  relationshipTimeline: [
+    { date: '17 de mayo', title: 'Nos encontramos', note: 'El comienzo de una historia que sigue creciendo.' },
+    { date: '14 de septiembre de 2026', title: 'Elegimos ser pareja', note: 'Y empezamos a construir este nosotros.' },
+  ],
   futureMessage: 'No quiero estar contigo solo cuando todo es fácil. Quiero aprender, crecer y atravesar la vida a tu lado, con paciencia y con amor.',
   futurePromise: 'Sueño con casarme contigo y, algún día, construir nuestra propia familia.',
+  futureCommitments: [
+    { title: 'Quedarme', detail: 'Acompañarte también en los días difíciles.', symbol: 'heart' },
+    { title: 'Caminar juntos', detail: 'Hacerle frente a la vida, un paso a la vez.', symbol: 'path' },
+    { title: 'Seguir soñando', detail: 'Imaginar un matrimonio y una familia construida con amor.', symbol: 'home' },
+  ],
   surpriseMessages: [
     'Si pudiera elegir nuevamente, volvería a encontrarte.',
     'La distancia no cambia lo que siento por ti.',
