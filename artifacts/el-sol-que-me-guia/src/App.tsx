@@ -153,16 +153,16 @@ function App() {
   const currentQuestion = storyContent.questions[questionIndex];
   const duration = getDuration(new Date(storyContent.relationshipStart), now);
   const answeredCount = storyContent.questions.filter((question) => Boolean(answers[question.id]?.trim())).length;
-  const heartColors = ['#d8759d', '#d6a44f', '#a78ac5'];
+  const heartColors = ['#e06a43', '#e6ae50', '#f0d6a3'];
 
   if (!started) {
     return <main className="welcome">
       <StarField />
       <div className="welcome-content">
-        <div className="eyebrow">{storyContent.welcomeName ? `${storyContent.greeting}, ${storyContent.welcomeName}` : storyContent.greeting}</div>
+        <div className="eyebrow"><span aria-hidden="true">✦ </span>{storyContent.welcomeName ? `${storyContent.greeting}, ${storyContent.welcomeName}` : storyContent.greeting}<span aria-hidden="true"> ✦</span></div>
         <Sun className="sun-illustration" strokeWidth={1.1} aria-hidden="true" />
         <h1 className="display-title">{storyContent.title}</h1>
-        <p>{storyContent.welcomeLine}</p>
+        <p><span aria-hidden="true">💌 </span>{storyContent.welcomeLine}</p>
         <div className={`envelope-wrap ${envelopeOpened ? 'envelope-open' : ''}`}>
           <button className="envelope-button" type="button" data-testid="button-open-welcome-envelope" aria-label={envelopeOpened ? 'Sobre abierto' : 'Abrir el sobre de bienvenida'} onClick={() => setEnvelopeOpened(true)}>
             <span className="envelope-body" />
@@ -187,6 +187,7 @@ function App() {
       </button>
       <div className="top-actions">
         <button className="music-button" type="button" data-testid="button-music-toggle" data-playing={musicPlaying} aria-pressed={musicPlaying} onClick={toggleMusic}>
+          <span aria-hidden="true">🎵</span>
           {musicPlaying ? <Pause size={17} /> : <Play size={17} />}
           <Music2 size={16} />
           {musicPlaying ? 'Pausar música' : 'Escuchar música'}
@@ -209,7 +210,7 @@ function App() {
     {chapter === 0 && <section className="scene" aria-labelledby="chapter-title-0">
       <div className="scene-inner">
         <header className="scene-head">
-          <div className="eyebrow">Capítulo uno · para cada estado del corazón</div>
+          <div className="eyebrow"><span aria-hidden="true">✉️ </span>Capítulo uno · para cada estado del corazón</div>
           <h2 className="sub-title" id="chapter-title-0">{storyContent.chapters[0].label}</h2>
           <p>Hay palabras para los días luminosos y también para los que necesitan un poquito más de ternura. Elige la que hoy te haga bien.</p>
         </header>
@@ -228,7 +229,7 @@ function App() {
           <button className="letter-scrim" type="button" aria-label="Cerrar la carta" onClick={() => { setOpenLetter(null); letterTriggerRef.current?.focus(); }} />
           <article ref={letterDialogRef} className="letter-open" role="dialog" aria-modal="true" aria-labelledby="opened-letter-title" data-testid={`text-letter-message-${openLetter}`} aria-live="polite">
             <button ref={closeLetterRef} className="letter-close" type="button" data-testid="button-close-day-letter" aria-label="Cerrar carta y volver a los sobres" onClick={() => { setOpenLetter(null); letterTriggerRef.current?.focus(); }}><X size={19} /></button>
-            <span className="letter-dialog-kicker"><MailOpen size={16} /> Una carta para ti</span>
+             <span className="letter-dialog-kicker"><MailOpen size={16} /><span aria-hidden="true"> ✨</span> Una carta para ti</span>
             <h3 id="opened-letter-title">{storyContent.dayLetters.find((letter) => letter.id === openLetter)?.title}</h3>
             <p>{storyContent.dayLetters.find((letter) => letter.id === openLetter)?.message}</p>
             <button className="button-soft" type="button" data-testid="button-return-to-envelopes" onClick={() => { setOpenLetter(null); letterTriggerRef.current?.focus(); }}><ArrowLeft size={16} /> Volver a los sobres</button>
@@ -240,7 +241,7 @@ function App() {
     {chapter === 1 && <section className="scene" aria-labelledby="chapter-title-1">
       <div className="scene-inner">
         <header className="scene-head">
-          <div className="eyebrow">Capítulo dos · sin respuestas correctas</div>
+          <div className="eyebrow"><span aria-hidden="true">💞 </span>Capítulo dos · sin respuestas correctas</div>
           <h2 className="sub-title" id="chapter-title-1">{storyContent.chapters[1].label}</h2>
           <p>Unas preguntas para recordar, imaginar y conocernos un poquito más. Puedes responder solo lo que quieras.</p>
         </header>
@@ -256,7 +257,7 @@ function App() {
         </aside>
         {!questionComplete ? <article className="story-panel" data-testid="panel-story-question">
           <div className="question-count" data-testid="text-question-progress">Pregunta {questionIndex + 1} de {storyContent.questions.length}</div>
-          <h3 className="question-text">{currentQuestion.prompt}</h3>
+          <h3 className="question-text"><span aria-hidden="true">♡ </span>{currentQuestion.prompt}</h3>
           <label className="sr-only" htmlFor="answer-input">Tu respuesta</label>
           <textarea id="answer-input" className="answer-field" data-testid={`input-answer-${currentQuestion.id}`} placeholder={currentQuestion.placeholder} value={answers[currentQuestion.id] ?? ''} onChange={(event) => setAnswers((old) => ({ ...old, [currentQuestion.id]: event.target.value }))} />
           <div className="answered-note" role="status" data-testid="status-question-kind">{answers[currentQuestion.id]?.trim() ? currentQuestion.response : 'No es un examen. No hay respuestas incorrectas.'}</div>
@@ -268,7 +269,7 @@ function App() {
           </div>
         </article> : <article className="story-panel question-finish" data-testid="panel-questions-complete">
           <Sparkles size={32} className="promise-orbit" />
-          <h3 className="question-text">Gracias por compartir un pedacito de ti.</h3>
+          <h3 className="question-text"><span aria-hidden="true">✨ </span>Gracias por compartir un pedacito de ti.</h3>
           <p className="answered-note">Tus respuestas son tuyas y puedes volver a cambiarlas cuando quieras.</p>
           <button className="button-soft" data-testid="button-revisit-questions" onClick={() => { setQuestionComplete(false); setQuestionIndex(0); }}>Volver a las preguntas <RotateCcw size={16} /></button>
         </article>}
@@ -278,7 +279,7 @@ function App() {
     {chapter === 2 && <section className="scene" aria-labelledby="chapter-title-2">
       <div className="scene-inner">
         <header className="scene-head">
-          <div className="eyebrow">Capítulo tres · aquí y allá</div>
+          <div className="eyebrow"><span aria-hidden="true">🌙 </span>Capítulo tres · aquí y allá</div>
           <h2 className="sub-title" id="chapter-title-2">{storyContent.chapters[2].label}</h2>
           <p>{storyContent.skyMessage}</p>
         </header>
@@ -296,7 +297,7 @@ function App() {
           <p className="sky-message">{storyContent.skyMessage}</p>
         </div>
         <div className="relationship-timeline" data-testid="illustration-relationship-timeline">
-          <div className="timeline-heading"><span className="eyebrow">Dos fechas que guardamos</span><h3>De encontrarnos a elegirnos</h3></div>
+          <div className="timeline-heading"><span className="eyebrow"><span aria-hidden="true">✦ </span>Dos fechas que guardamos</span><h3>De encontrarnos a elegirnos</h3></div>
           <svg className="timeline-art" viewBox="0 0 760 190" role="img" aria-label="Dos figuras ilustradas se acercan y encuentran; una línea de corazones las conecta con el comienzo de una relación">
             <path className="timeline-trail" d="M105 132 C205 25 265 165 380 94 S570 28 655 112" />
             <path className="timeline-dash" d="M105 132 C205 25 265 165 380 94 S570 28 655 112" />
@@ -308,7 +309,7 @@ function App() {
           </svg>
           <div className="timeline-events">
             {storyContent.relationshipTimeline.map((event, index) => <div className={`timeline-event event-${index}`} key={event.date} data-testid={`timeline-event-${index + 1}`}>
-              <span className="timeline-event-date">{event.date}</span><strong>{event.title}</strong><p>{event.note}</p>
+              <span className="timeline-event-date"><span aria-hidden="true">{index === 0 ? '✨ ' : '🧡 '}</span>{event.date}</span><strong>{event.title}</strong><p>{event.note}</p>
             </div>)}
           </div>
         </div>
@@ -327,7 +328,7 @@ function App() {
     {chapter === 3 && <section className="scene" aria-labelledby="chapter-title-3">
       <div className="scene-inner">
         <header className="scene-head">
-          <div className="eyebrow">Capítulo cuatro · un deseo que crece</div>
+          <div className="eyebrow"><span aria-hidden="true">🏡 </span>Capítulo cuatro · un deseo que crece</div>
           <h2 className="sub-title" id="chapter-title-3">{storyContent.chapters[3].label}</h2>
           <p>No quiero estar a tu lado solo cuando todo sale bien. Quiero elegirnos también cuando el camino pida paciencia.</p>
         </header>
@@ -345,7 +346,7 @@ function App() {
             </svg>
           </div>
           <p>{storyContent.futureMessage}</p>
-          <p className="promise-emphasis">{storyContent.futurePromise}</p>
+          <p className="promise-emphasis"><span aria-hidden="true">💍 </span>{storyContent.futurePromise}</p>
           <p>Sin prisa por tener todas las respuestas. Con ganas de construir, conversar y seguir soñando juntos.</p>
           <div className="promise-commitments" data-testid="list-future-commitments">
             {storyContent.futureCommitments.map((item, index) => <div className="commitment-item" key={item.title} data-testid={`future-commitment-${index + 1}`}>
@@ -361,18 +362,41 @@ function App() {
     {chapter === 4 && <section className="scene final-scene" aria-labelledby="chapter-title-4">
       <div className="scene-inner">
         <header className="scene-head">
-          <div className="eyebrow">Un último sobre · para leer a tu ritmo</div>
+          <div className="eyebrow"><span aria-hidden="true">🧡 </span>Un último sobre · para leer a tu ritmo</div>
           <h2 className="sub-title" id="chapter-title-4">{storyContent.chapters[4].label}</h2>
-          <p>Hay palabras que quería dejarte aquí, para que puedas volver a ellas cuando quieras.</p>
+          <p><span aria-hidden="true">🕯️ </span>Hay palabras que quería dejarte aquí, para que puedas volver a ellas cuando quieras.</p>
         </header>
         {!finalOpened ? <div className="final-envelope">
+          <div className="comet-art" aria-hidden="true">
+            <svg viewBox="0 0 680 260" role="presentation">
+              <defs>
+                <linearGradient id="comet-tail" x1="0" y1="1" x2="1" y2="0">
+                  <stop offset="0" stopColor="#8e241c" stopOpacity="0" />
+                  <stop offset=".55" stopColor="#d94b25" stopOpacity=".55" />
+                  <stop offset="1" stopColor="#ffd27b" stopOpacity=".92" />
+                </linearGradient>
+                <radialGradient id="comet-core">
+                  <stop offset="0" stopColor="#fffdf2" />
+                  <stop offset=".25" stopColor="#fff1bd" />
+                  <stop offset="1" stopColor="#f58b35" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+              <path d="M80 222C222 175 340 107 514 50" fill="none" stroke="url(#comet-tail)" strokeWidth="26" strokeLinecap="round" />
+              <path d="M126 215C270 163 378 103 516 52" fill="none" stroke="#ffd694" strokeOpacity=".75" strokeWidth="2" />
+              <circle cx="522" cy="47" r="46" fill="url(#comet-core)" />
+              <circle cx="522" cy="47" r="8" fill="#fffdf2" />
+              <path d="M462 67 429 81m50-22-40 2M490 86l-19 28" stroke="#f4a44e" strokeWidth="2" strokeLinecap="round" opacity=".8" />
+              <circle cx="229" cy="77" r="2" fill="#fff0cf" /><circle cx="363" cy="207" r="2" fill="#f7b869" /><circle cx="584" cy="152" r="2.5" fill="#fff0cf" />
+            </svg>
+          </div>
           <div className="envelope-wrap">
             <button className="envelope-button" type="button" data-testid="button-open-final-letter" aria-label="Abrir la carta final" onClick={() => { setFinalOpened(true); setFinalAll(false); setRevealedText(''); }}>
-              <span className="envelope-body" /><span className="envelope-letter">Para mi mami</span><span className="envelope-flap" />
+              <span className="envelope-body" /><span className="envelope-letter">Mamacita hermosa</span><span className="envelope-flap" />
             </button>
           </div>
           <button className="button-primary" type="button" data-testid="button-open-final-letter-text" onClick={() => { setFinalOpened(true); setFinalAll(false); setRevealedText(''); }}>Abrir la carta <MailOpen size={17} /></button>
         </div> : <article className="final-letter-card" data-testid="content-final-letter">
+          <div className="letter-top-mark" aria-hidden="true">💌 &nbsp; CON TODO MI AMOR &nbsp; ✦</div>
           <p aria-live="polite" data-testid="text-final-letter">{finalAll ? contentText : revealedText}</p>
           {!finalAll && <button className="text-link" type="button" data-testid="button-show-all-letter" onClick={() => { setFinalAll(true); setRevealedText(contentText); }}>Mostrar toda la carta ahora</button>}
           <div className="question-actions">
@@ -387,9 +411,10 @@ function App() {
       <StarField />
       <div className="scene-inner">
         <Sun className="final-sun" strokeWidth={1} aria-hidden="true" />
-        <div className="eyebrow" style={{ color: '#e2c9a0' }}>Y el cuento sigue</div>
+        <div className="closing-orbit" aria-hidden="true"><span className="closing-comet" /></div>
+        <div className="eyebrow" style={{ color: '#e2c9a0' }}><span aria-hidden="true">✨ </span>Y el cuento sigue</div>
         <h2 className="sub-title" id="chapter-title-5">{storyContent.title}</h2>
-        <p data-testid="text-final-message">{storyContent.finalMessage}</p>
+        <p data-testid="text-final-message"><span aria-hidden="true">🧡 </span>{storyContent.finalMessage}</p>
         <button className="button-soft" data-testid="button-return-to-beginning" onClick={() => goTo(0)}><RotateCcw size={16} /> Volver a recorrerlo</button>
       </div>
     </section>}
@@ -398,8 +423,8 @@ function App() {
       <button className="button-soft" type="button" data-testid="button-previous-chapter" onClick={() => goTo(chapter - 1)} disabled={chapter === 0}><ArrowLeft size={17} /> Capítulo anterior</button>
       {chapter < storyContent.chapters.length - 1 ? <button className="button-primary" type="button" data-testid="button-next-chapter" onClick={() => goTo(chapter + 1)}>Continuar <ArrowRight size={17} /></button> : <span className="chapter-end-label" data-testid="text-story-progress-end"><Check size={15} /> Has llegado al final de este cuento</span>}
     </footer>
-    <button className="surprise-button" type="button" data-testid="button-surprise-message" aria-label="Descubrir un mensaje sorpresa" title="Hay un mensaje escondido" onClick={revealSurprise}><Sparkles size={20} strokeWidth={1.5} /></button>
-    {surpriseVisible && <div className="surprise-toast" role="status" data-testid="text-surprise-message">{storyContent.surpriseMessages[surpriseIndex]}</div>}
+     <button className="surprise-button" type="button" data-testid="button-surprise-message" aria-label="Descubrir un mensaje sorpresa" title="Hay un mensaje escondido" onClick={revealSurprise}><Sparkles size={20} strokeWidth={1.5} /></button>
+    {surpriseVisible && <div className="surprise-toast" role="status" data-testid="text-surprise-message"><span aria-hidden="true">✨ </span>{storyContent.surpriseMessages[surpriseIndex]}</div>}
   </div>;
 }
 
