@@ -1,0 +1,1 @@
+- [Gift experience scope](gift-app-scope.md) — Keep the app static and do not invent names or shared memories.

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "El sol que me guía"
+description = "Una experiencia romántica e interactiva para recorrer cartas, recuerdos, una historia a distancia y una carta final personal, diseñada para compartirse con la persona amada."
+version = "1.0.0"
+id = "artifacts/el-sol-que-me-guia"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20224
+
+[services.development]
+run = "pnpm --filter @workspace/el-sol-que-me-guia run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/el-sol-que-me-guia", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/el-sol-que-me-guia/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20224"
+BASE_PATH = "/"
