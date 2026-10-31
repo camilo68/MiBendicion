@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -197,7 +196,7 @@
 .question-text { font-family: var(--app-font-serif); font-size: clamp(1.6rem, 4vw, 2.4rem); color: #66506e; line-height: 1.15; margin: .8rem 0 1.4rem; }
 .answer-field { display: block; width: 100%; min-height: 110px; resize: vertical; background: #fffdfb; color: #5e4b64; border: 1px solid #e6d4df; border-radius: 14px; padding: .9rem 1rem; line-height: 1.6; }
 .answer-field::placeholder { color: #b09cab; }
-.question-actions { display: flex; justify-content: space-between; gap: .7rem; margin-top: 1.1rem; }
+.question-actions { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .7rem; margin-top: 1.1rem; }
 .answered-note { min-height: 26px; color: #9a708c; font-family: var(--app-font-serif); font-size: 1.15rem; margin-top: .8rem; }
 .sky-scene { position: relative; overflow: hidden; min-height: 390px; border-radius: 28px; padding: 2rem; background: radial-gradient(ellipse at 70% 12%, #534376 0, #302b55 42%, #201e43 100%); color: #fff3e7; box-shadow: 0 20px 50px #29214327; }
 .sky-scene:before { content: ''; position: absolute; width: 190px; height: 190px; right: 8%; top: -88px; border-radius: 50%; background: #eacb9b; box-shadow: 0 0 70px #f5dfb54a; }
@@ -224,7 +223,7 @@
 .final-end .sub-title { color: #fff0d6; }
 .final-end p { color: #e1d4e8; line-height: 1.8; }
 .final-sun { width: 150px; height: 150px; color: #f2d49e; margin-bottom: 1rem; filter: drop-shadow(0 0 42px #f6dca84d); }
-.surprise-button { position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 18; min-width: 48px; min-height: 48px; border-radius: 50%; border: 1px solid #e4c9d9; color: #966887; background: #fff9fc; box-shadow: 0 8px 25px #60406322; display: grid; place-items: center; }
+.surprise-button { position: fixed; right: 1.2rem; bottom: calc(1.2rem + env(safe-area-inset-bottom)); z-index: 18; min-width: 48px; min-height: 48px; border-radius: 50%; border: 1px solid #e4c9d9; color: #966887; background: #fff9fc; box-shadow: 0 8px 25px #60406322; display: grid; place-items: center; }
 .surprise-toast { position: fixed; z-index: 50; bottom: 5.4rem; right: 1rem; width: min(330px, calc(100vw - 2rem)); padding: 1rem 1.2rem; border: 1px solid #e7cddd; border-radius: 16px; background: #fff9fc; color: #705574; box-shadow: var(--shadow); font-family: var(--app-font-serif); font-size: 1.22rem; animation: rise-in .3s ease both; }
 .chapter-controls { display: flex; justify-content: space-between; gap: 1rem; max-width: 1000px; margin: 3rem auto 0; }
 .chapter-controls .button-primary, .chapter-controls .button-soft { min-width: 138px; }
@@ -571,7 +570,7 @@
   .closing-orbit { width: 150px; height: 150px; }
   .closing-orbit:before { width: 190px; height: 70px; }
   .closing-orbit:after { width: 226px; height: 88px; }
-  .chapter-controls { padding-bottom: 1.2rem; }
+  .chapter-controls { padding-bottom: 4.6rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .closing-comet { animation: none !important; }

@@ -1,45 +1,72 @@
-# [Project name]
+# El sol que me guía
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Experiencia web romántica e interactiva: un cuento celestial de seis capítulos con cartas, un cuestionario, una escena a distancia, una promesa de futuro y una carta final con revelación progresiva. Es un regalo personal, estática y sin backend.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `corepack enable` — deja `pnpm` disponible en la máquina.
+- `pnpm install` — instala el workspace.
+- `pnpm --filter @workspace/el-sol-que-me-guia run dev` — servidor de desarrollo. Requiere `PORT` y `BASE_PATH`; en Replit los define `.replit-artifact`.
+- `pnpm --filter @workspace/el-sol-que-me-guia run build` — build de producción en `artifacts/el-sol-que-me-guia/dist/public`.
+- `pnpm run typecheck` — typecheck de todo el workspace.
+
+En PowerShell, antes de `dev` o `build`:
+
+```powershell
+$env:PORT="20224"; $env:BASE_PATH="/"
+```
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- pnpm workspaces, React 19, Vite 7, TypeScript 5.9
+- Tailwind CSS v4 + CSS propio para animaciones e ilustraciones
+- Sin API, sin autenticación y sin base de datos
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/el-sol-que-me-guia/src/content.ts` — **toda la personalización**: fechas, cartas, preguntas, promesas, carta final y ruta de la música.
+- `artifacts/el-sol-que-me-guia/src/App.tsx` — experiencia y navegación por capítulos.
+- `artifacts/el-sol-que-me-guia/src/index.css` — paleta oscura, animaciones y responsive.
+- `artifacts/el-sol-que-me-guia/public/music.mp3` — «Novatos» de HUMBE, 2:28 (se carga solo al pulsar play).
+- `artifacts/el-sol-que-me-guia/public/og-image.png` — imagen de vista previa al compartir el enlace.
+- `artifacts/el-sol-que-me-guia/index.html` — título, metadatos y fuentes.
+
+`artifacts/api-server`, `lib/db`, `lib/api-*`, `lib/api-client-react` y `artifacts/mockup-sandbox` son andamiaje de la plantilla de Replit. Esta experiencia no los usa.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Todo el contenido vive en un único objeto (`storyContent`) para que se pueda editar sin tocar componentes.
+- No hay router: la experiencia es una máquina de estados con seis capítulos y navegación libre.
+- El contador se calcula en vivo desde `relationshipStart` y muestra un estado especial si la fecha aún no llegó.
+- La carta final se revela palabra a palabra y se divide en párrafos reales; el `aria-live` se mantiene apagado durante la animación.
+- La app está marcada `noindex, nofollow` y `robots.txt` bloquea el rastreo: es un regalo privado, no una página pública.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+1. Bienvenida con sobre que se abre.
+2. Cartas para distintos estados de ánimo.
+3. Cuestionario sin respuestas incorrectas.
+4. Cielo compartido con línea de tiempo y contador.
+5. Promesa de futuro.
+6. Carta final, revelación progresiva y escena de cierre.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Mantener la app estática: no añadir backend, autenticación ni base de datos.
+- No inventar recuerdos, nombres ni frases personales.
+- Paleta cósmica oscura inspirada en el álbum *ARMAGEDÓN* de HUMBE: carbón, naranja brasa, dorado y marfil.
+- Emojis como acentos, sin saturar.
+
+## Pending personal data
+
+- `welcomeName` y `personalDetails` están vacíos.
+- Las cartas y la carta final son borradores editables.
+- Confirmar que `music.mp3` se puede publicar.
+- Al publicar, cambiar `og:image` por una URL absoluta (`https://tu-dominio/og-image.png`).
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Vite falla si faltan `PORT` o `BASE_PATH`.
+- Si cambias el título, actualízalo también en `index.html`.
+- El enlace de vista previa de WhatsApp necesita `og:image` con URL absoluta; en local queda relativa.
+- No se ejecutan pruebas automatizadas: verificar a mano navegación, cartas, cuestionario, contador y carta final.

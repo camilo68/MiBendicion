@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { storyContent } from './content';
 
+const musicFileLabel = storyContent.musicPath.replace(/^\//, 'public/');
+
 function StarField() {
   const stars = [
     [8, 13, 0], [19, 76, 1], [28, 25, 2], [71, 18, 1], [88, 64, 0], [80, 32, 2], [12, 51, 1], [57, 82, 0], [42, 9, 2], [94, 22, 1],
@@ -39,6 +41,27 @@ function getDuration(start: Date, now: Date) {
   return { future: false, daysUntil: 0, years, months, days };
 }
 
+function TimeTogether() {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const duration = getDuration(new Date(storyContent.relationshipStart), now);
+
+  return <div className="counter-wrap" data-testid="content-time-together">
+    <div className="eyebrow">Desde el 14 de septiembre de 2026</div>
+    {duration.future ? <p className="answered-note" data-testid="status-date-not-arrived">Nuestra fecha está en el horizonte. Faltan {duration.daysUntil} {duration.daysUntil === 1 ? 'día' : 'días'} para comenzar a contar este tiempo juntos.</p> :
+      <><p className="answered-note">Un tiempo que seguimos construyendo</p><div className="counter-grid" aria-label="Tiempo juntos">
+        <div className="counter-box" data-testid="value-years-together"><strong>{duration.years}</strong><span>{duration.years === 1 ? 'año' : 'años'}</span></div>
+        <div className="counter-box" data-testid="value-months-together"><strong>{duration.months}</strong><span>{duration.months === 1 ? 'mes' : 'meses'}</span></div>
+        <div className="counter-box" data-testid="value-days-together"><strong>{duration.days}</strong><span>{duration.days === 1 ? 'día' : 'días'}</span></div>
+      </div><small data-testid="text-counter-updated">Actualizado ahora · {now.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })}</small></>}
+  </div>;
+}
+
 function App() {
   const [started, setStarted] = useState(false);
   const [envelopeOpened, setEnvelopeOpened] = useState(false);
@@ -53,16 +76,26 @@ function App() {
   const [surpriseVisible, setSurpriseVisible] = useState(false);
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [musicError, setMusicError] = useState('');
-  const [now, setNow] = useState(() => new Date());
   const audioRef = useRef<HTMLAudioElement>(null);
-  const contentText = useMemo(() => storyContent.finalLetter.join('\n\n'), []);
-  const [revealedText, setRevealedText] = useState('');
+  const letterParagraphs = useMemo(() => {
+    let offset = 0;
+    return storyContent.finalLetter.map((text) => {
+      const words = text.split(/\s+/).filter(Boolean);
+      const paragraph = { text, words, offset };
+      offset += words.length;
+      return paragraph;
+    });
+  }, []);
+  const totalWords = useMemo(() => letterParagraphs.reduce((total, paragraph) => total + paragraph.words.length, 0), [letterParagraphs]);
+  const [revealedWords, setRevealedWords] = useState(0);
   const closeLetterRef = useRef<HTMLButtonElement>(null);
   const letterDialogRef = useRef<HTMLElement>(null);
   const letterTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!openLetter) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     closeLetterRef.current?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -82,39 +115,43 @@ function App() {
       }
     };
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [openLetter]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!finalOpened || finalAll) return;
-    let wordCount = 0;
-    const words = contentText.split(/\s+/);
+    if (!finalOpened || finalAll || chapter !== 4) return;
     const timer = window.setInterval(() => {
-      wordCount = Math.min(wordCount + 2, words.length);
-      setRevealedText(words.slice(0, wordCount).join(' '));
-      if (wordCount >= words.length) window.clearInterval(timer);
+      setRevealedWords((previous) => {
+        const next = Math.min(previous + 2, totalWords);
+        if (next >= totalWords) window.clearInterval(timer);
+        return next;
+      });
     }, 125);
     return () => window.clearInterval(timer);
-  }, [contentText, finalOpened, finalAll]);
+  }, [chapter, finalAll, finalOpened, totalWords]);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     const failed = () => {
       setMusicPlaying(false);
-      setMusicError('No se pudo reproducir public/music.mp3. Añade un archivo de audio válido para escuchar música.');
+      setMusicError(`No se pudo reproducir ${musicFileLabel}. Añade un archivo de audio válido para escuchar música.`);
     };
     const loaded = () => setMusicError('');
+    const playing = () => setMusicPlaying(true);
+    const paused = () => setMusicPlaying(false);
     audio.addEventListener('error', failed);
     audio.addEventListener('canplay', loaded);
+    audio.addEventListener('play', playing);
+    audio.addEventListener('pause', paused);
     return () => {
       audio.removeEventListener('error', failed);
       audio.removeEventListener('canplay', loaded);
+      audio.removeEventListener('play', playing);
+      audio.removeEventListener('pause', paused);
     };
   }, []);
 
@@ -139,7 +176,7 @@ function App() {
       setMusicPlaying(true);
     } catch {
       setMusicPlaying(false);
-      setMusicError('La música aún no está disponible. Comprueba que public/music.mp3 exista y sea un audio válido.');
+      setMusicError(`La música aún no está disponible. Comprueba que ${musicFileLabel} exista y sea un audio válido.`);
     }
   };
 
@@ -151,7 +188,6 @@ function App() {
 
   const progress = ((chapter + 1) / storyContent.chapters.length) * 100;
   const currentQuestion = storyContent.questions[questionIndex];
-  const duration = getDuration(new Date(storyContent.relationshipStart), now);
   const answeredCount = storyContent.questions.filter((question) => Boolean(answers[question.id]?.trim())).length;
   const heartColors = ['#e06a43', '#e6ae50', '#f0d6a3'];
 
@@ -181,7 +217,7 @@ function App() {
   return <div className="story-app">
     <audio ref={audioRef} src={storyContent.musicPath} loop preload="none" />
     <header className="topbar">
-      <button className="brand" type="button" data-testid="button-story-home" onClick={() => { setStarted(false); setEnvelopeOpened(true); }}>
+      <button className="brand" type="button" data-testid="button-story-home" onClick={() => { audioRef.current?.pause(); setMusicPlaying(false); setStarted(false); setEnvelopeOpened(true); }}>
         <Sun className="sun-mark" strokeWidth={1.4} aria-hidden="true" />
         <span>{storyContent.title}</span>
       </button>
@@ -207,6 +243,7 @@ function App() {
       <div className="progress-fill" style={{ width: `${progress}%` }} />
     </div>
 
+    <main id="story-content">
     {chapter === 0 && <section className="scene" aria-labelledby="chapter-title-0">
       <div className="scene-inner">
         <header className="scene-head">
@@ -271,7 +308,10 @@ function App() {
           <Sparkles size={32} className="promise-orbit" />
           <h3 className="question-text"><span aria-hidden="true">✨ </span>Gracias por compartir un pedacito de ti.</h3>
           <p className="answered-note">Tus respuestas son tuyas y puedes volver a cambiarlas cuando quieras.</p>
-          <button className="button-soft" data-testid="button-revisit-questions" onClick={() => { setQuestionComplete(false); setQuestionIndex(0); }}>Volver a las preguntas <RotateCcw size={16} /></button>
+          <div className="question-actions">
+            <button className="button-soft" data-testid="button-revisit-questions" onClick={() => { setQuestionComplete(false); setQuestionIndex(0); }}>Volver a las preguntas <RotateCcw size={16} /></button>
+            <button className="button-primary" data-testid="button-continue-from-questions" onClick={() => goTo(2)}>Seguir al siguiente capítulo <ArrowRight size={16} /></button>
+          </div>
         </article>}
       </div>
     </section>}
@@ -313,15 +353,7 @@ function App() {
             </div>)}
           </div>
         </div>
-        <div className="counter-wrap" data-testid="content-time-together">
-          <div className="eyebrow">Desde el 14 de septiembre de 2026</div>
-          {duration.future ? <p className="answered-note" data-testid="status-date-not-arrived">Nuestra fecha está en el horizonte. Faltan {duration.daysUntil} {duration.daysUntil === 1 ? 'día' : 'días'} para comenzar a contar este tiempo juntos.</p> :
-            <><p className="answered-note">Un tiempo que seguimos construyendo</p><div className="counter-grid" aria-label="Tiempo juntos">
-              <div className="counter-box" data-testid="value-years-together"><strong>{duration.years}</strong><span>{duration.years === 1 ? 'año' : 'años'}</span></div>
-              <div className="counter-box" data-testid="value-months-together"><strong>{duration.months}</strong><span>{duration.months === 1 ? 'mes' : 'meses'}</span></div>
-              <div className="counter-box" data-testid="value-days-together"><strong>{duration.days}</strong><span>{duration.days === 1 ? 'día' : 'días'}</span></div>
-            </div><small data-testid="text-counter-updated">Actualizado ahora · {now.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })}</small></>}
-        </div>
+        <TimeTogether />
       </div>
     </section>}
 
@@ -390,15 +422,22 @@ function App() {
             </svg>
           </div>
           <div className="envelope-wrap">
-            <button className="envelope-button" type="button" data-testid="button-open-final-letter" aria-label="Abrir la carta final" onClick={() => { setFinalOpened(true); setFinalAll(false); setRevealedText(''); }}>
+            <button className="envelope-button" type="button" data-testid="button-open-final-letter" aria-label="Abrir la carta final" onClick={() => { setFinalOpened(true); setFinalAll(false); setRevealedWords(0); }}>
               <span className="envelope-body" /><span className="envelope-letter">Mamacita hermosa</span><span className="envelope-flap" />
             </button>
           </div>
-          <button className="button-primary" type="button" data-testid="button-open-final-letter-text" onClick={() => { setFinalOpened(true); setFinalAll(false); setRevealedText(''); }}>Abrir la carta <MailOpen size={17} /></button>
+          <button className="button-primary" type="button" data-testid="button-open-final-letter-text" onClick={() => { setFinalOpened(true); setFinalAll(false); setRevealedWords(0); }}>Abrir la carta <MailOpen size={17} /></button>
         </div> : <article className="final-letter-card" data-testid="content-final-letter">
           <div className="letter-top-mark" aria-hidden="true">💌 &nbsp; CON TODO MI AMOR &nbsp; ✦</div>
-          <p aria-live="polite" data-testid="text-final-letter">{finalAll ? contentText : revealedText}</p>
-          {!finalAll && <button className="text-link" type="button" data-testid="button-show-all-letter" onClick={() => { setFinalAll(true); setRevealedText(contentText); }}>Mostrar toda la carta ahora</button>}
+          <div className="final-letter-body" data-testid="text-final-letter" aria-live={finalAll || revealedWords >= totalWords ? 'polite' : 'off'}>
+            {letterParagraphs.map((paragraph, index) => {
+              const visibleWords = finalAll ? paragraph.words.length : Math.max(0, revealedWords - paragraph.offset);
+              if (visibleWords === 0) return null;
+              const complete = visibleWords >= paragraph.words.length;
+              return <p key={index}>{complete ? paragraph.text : paragraph.words.slice(0, visibleWords).join(' ')}</p>;
+            })}
+          </div>
+          {!finalAll && <button className="text-link" type="button" data-testid="button-show-all-letter" onClick={() => { setFinalAll(true); setRevealedWords(totalWords); }}>Mostrar toda la carta ahora</button>}
           <div className="question-actions">
             <button className="button-quiet" type="button" data-testid="button-close-final-letter" onClick={() => { setFinalOpened(false); setFinalAll(false); }}>Cerrar carta</button>
             <button className="button-primary" type="button" data-testid="button-finish-letter" onClick={() => goTo(5)}>Llegar al final <ArrowRight size={16} /></button>
@@ -418,6 +457,7 @@ function App() {
         <button className="button-soft" data-testid="button-return-to-beginning" onClick={() => goTo(0)}><RotateCcw size={16} /> Volver a recorrerlo</button>
       </div>
     </section>}
+    </main>
 
     <footer className="chapter-controls" aria-label="Controles del recorrido">
       <button className="button-soft" type="button" data-testid="button-previous-chapter" onClick={() => goTo(chapter - 1)} disabled={chapter === 0}><ArrowLeft size={17} /> Capítulo anterior</button>

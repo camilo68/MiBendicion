@@ -66,7 +66,7 @@ export const storyContent = {
     'No necesitas caminar a mi lado para acompañarme; tú eres el sol que me guía.',
   ],
   finalLetter: [
-      'Mamacita hermosa,',
+    'Mamacita hermosa,',
     'Quería regalarte estas palabras para que puedas volver a ellas cuando quieras sentirme un poco más cerca.',
     'A veces pienso que no necesito que camines literalmente a mi lado. Tú eres ese sol que me guía, la luz que aparece incluso cuando siento que estoy atravesando mi peor oscuridad. Tu presencia me acompaña aunque haya kilómetros entre nosotros, y eso significa más de lo que sé explicar.',
     'No sé exactamente cómo será cada paso del camino, pero sí sé lo que deseo: estar contigo, cuidarnos y elegirnos también cuando la vida se ponga difícil. Sueño con casarme contigo y construir nuestra propia familia, con todo lo que eso significa para nosotros.',
